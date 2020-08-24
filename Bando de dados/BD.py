@@ -14,12 +14,22 @@ cursor = banco.cursor()
 #cursor.execute(comando_SQL,dados)
 #banco.commit() # quando fizer alteração no banco de dados
 
-comando_SQL ="SELECT * FROM cadastros"
-cursor.execute(comando_SQL)
+#comando_SQL ="SELECT * FROM cadastros"
+#cursor.execute(comando_SQL)
+#valores_lidos=cursor.fetchall()
+#print(valores_lidos[1][1]) # permite selecionar o item como se fosse uma matriz
+#print(type(valores_lidos[1][1]))
+#print(valores_lidos[1][1]=='rec124')
+
+dado='recicla21'
+dados=dado
+comando_SQL ="SELECT senha FROM cadastros where login = %s"
+cursor.execute(comando_SQL, (dado,))
 valores_lidos=cursor.fetchall()
-print(valores_lidos[1][1]) # permite selecionar o item como se fosse uma matriz
-print(type(valores_lidos[1][1]))
-print(valores_lidos[1][1]=='rec124')
+#print(valores_lidos[0][1]) # permite selecionar o item como se fosse uma matriz
+print(valores_lidos)
+print(valores_lidos==[])
+print(type(valores_lidos))
 
 ''' No Mysql, 
 para ver os bancos de dados: "show databases;", 
