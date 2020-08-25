@@ -152,24 +152,20 @@ class Cadastro (BoxLayout):
 
 
         if self.valores == []:
-            if self.Iempresa.text !='' and self.Iendereco.text !='' and self.Iusuario.text !='' and self.Iusuario.text !='' and self.Isenha.text !='' and self.Icsenha.text !='':
+            if self.Iempresa.text !='' and self.Iendereco.text !='' and self.Iusuario.text !='' and self.Isenha.text !='' and self.Icsenha.text !='':
                 if self.Isenha.text == self.Icsenha.text:
-                    print('pode criar')
+                    self.comando_SQL = "INSERT INTO cadastros (login, senha, empresa, email) VALUES (%s,%s,%s,%s)"
+                    self.dados = (self.Iusuario.text,self.Isenha.text,self.Iempresa.text,self.Iendereco.text)
+                    self.cursor.execute(self.comando_SQL,self.dados)
+                    self.banco.commit()
+                    Principal.inicio(self)
+
                 else:
-                    print('senhas não conferem')
+                    self.Vsalvar2.text='Senhas não conferem'
             else:
-                print('Preencha todos os campos')
+                self.Vsalvar2.text='Preencha todos os campos'
         else:
-            print('usuário já existe')
-            '''if self.Isenha.text == self.valores[0][1]:
-                self.Vusuario.text = ''
-                self.Vsenha.text = 'Ok'
-            else:
-                self.Vusuario.text = ''
-                self.Vsenha.text = 'Incorreta'
-        else:
-            self.Vusuario.text = 'Inexistente'       '''
- 
+            self.Vsalvar2.text='Usuário já existe'
     
     def voltar(self):
         Principal.inicio(self)
