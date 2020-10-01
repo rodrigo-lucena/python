@@ -7,6 +7,7 @@ from kivy.uix.textinput import TextInput
 from kivy.graphics import Color, Rectangle
 from kivy.properties import StringProperty, OptionProperty, NumericProperty, BooleanProperty, ReferenceListProperty, ListProperty, ObjectProperty, DictProperty # Usado para alterar o default de diversas propriedades
 import mysql.connector
+from kivy.uix.checkbox import CheckBox
 ''' A lista acima carrega todas as bibliotecas usadas nesse programa'''
 
 class Botao(Button): # Classe para customizar um tipo de botão com alguns parâmetros pré definidos. Não precisa de construtor. Estamos usando o pacote kivy.properties pra usar a classe dessa maneira.
@@ -130,6 +131,21 @@ class Cadastro (BoxLayout): # Classe responsável pela criação da interface gr
         self.Icsenha=TextInput(text='',password=True, multiline=False, font_size=20,size_hint=self.b, scroll_y=60);self.caixaA2.add_widget(self.Icsenha)
         self.Vcsenha=Rotulo(text='', size_hint=self.c); self.caixaA2.add_widget(self.Vcsenha)
 
+        self.Vmateriais=Rotulo(text='',size_hint=self.a); self.caixaA2.add_widget(self.Vmateriais)
+        self.Lmateriais=Rotulo(text='Materiais da cooperativa:',size_hint=self.b); self.caixaA2.add_widget(self.Lmateriais)
+        self.Vmateriais2=Rotulo(text='',size_hint=self.c); self.caixaA2.add_widget(self.Vmateriais2)
+
+
+        self.Lpapelao=Rotulo(text='Papelão:',size_hint=self.a);self.caixaA2.add_widget(self.Lpapelao)
+        self.Cpapelao=CheckBox(size_hint=self.b);self.caixaA2.add_widget(self.Cpapelao)
+        self.Vpapelao=Rotulo(text='',size_hint=self.c);self.caixaA2.add_widget(self.Vpapelao)
+        #self.Cpapelao.on_press=self.papelao
+
+        self.Lplastico=Rotulo(text='Papelão:',size_hint=self.a);self.caixaA2.add_widget(self.Lplastico)
+        self.Cplastico=CheckBox(size_hint=self.b);self.caixaA2.add_widget(self.Cplastico)
+        self.Vplastico=Rotulo(text='',size_hint=self.c);self.caixaA2.add_widget(self.Vplastico)
+
+
         self.Vsalvar1=Rotulo(text='', size_hint=self.a); self.caixaA2.add_widget(self.Vsalvar1)
         self.Vsalvar2=Rotulo(text='', size_hint=self.b); self.caixaA2.add_widget(self.Vsalvar2) 
         self.Bsalvar=Botao(text='Salvar',size_hint=self.c, padding=(5,5), font_size=20); self.caixaA2.add_widget(self.Bsalvar)
@@ -142,16 +158,26 @@ class Cadastro (BoxLayout): # Classe responsável pela criação da interface gr
 
         self.add_widget(self.caixaA2)
         self.Vazio=Rotulo(text='', size_hint=(1,.2)); self.add_widget(self.Vazio) 
+
+    #def papelao(self):
+    #    print(self.Cpapelao.active)
+
     def salvar(self): # Salva o cadastro do usuário, caso o preenchimento dos dados tenha sido realizado adequadamente.
         self.banco = mysql.connector.connect(host='localhost',user='root', password='', database='coop') # Conexão do Python com o banco de dados presente nas nuvens.
         self.cursor = self.banco.cursor()
         self.usu=self.Iusuario.text,
+        self.usu2=self.Iusuario.text
+        print(self.usu2)
+        print(type(self.usu2))
         self.comando_SQL ="SELECT * FROM cadastros where login = %s"
         self.cursor.execute(self.comando_SQL, self.usu)
         self.valores=self.cursor.fetchall() 
         ''' Os comandos acima abrem o banco de dados e fazem a consulta na tabela "cadastros"'''
 
         ''' A sequência de estruturas if abaixo, compara os dados inseridos pelo usuário e comparam com a tabela "cadastros" permitindo a inserção de um novo cadastro ou imprimindo alguma mensagem de inconsistência do usuário'''
+        
+        
+        
         if self.valores == []:
             if self.Iempresa.text !='' and self.Iendereco.text !='' and self.Iusuario.text !='' and self.Isenha.text !='' and self.Icsenha.text !='':
                 if self.Isenha.text == self.Icsenha.text:
@@ -159,6 +185,34 @@ class Cadastro (BoxLayout): # Classe responsável pela criação da interface gr
                     self.dados = (self.Iusuario.text,self.Isenha.text,self.Iempresa.text,self.Iendereco.text)
                     self.cursor.execute(self.comando_SQL,self.dados)
                     self.banco.commit()
+                    ''' trabalhando nas linhas abaixo
+                    self.comando_SQL = "CREATE TABLE "+self.Iusuario.text+"(Material VARCHAR(30) not null, Quantidade VARCHAR(30), ValorTotal VARCHAR(30))"
+                    self.cursor.execute(self.comando_SQL)
+                    self.banco.commit()
+                
+                    #self.dados=[]
+                    count=0
+                    if self.Cpapelao.active:
+                        count+=1
+                        print(count)
+                        #self.dados.append('Papelão')
+                        self.comando_SQL = "insert into %s (Material) values ('Papelão')"
+                        self.cursor.execute(self.comando_SQL,self.usu)
+                        self.banco.commit()
+                    if self.Cplastico.active:
+                        count+=1
+                        print(count)
+                        #self.dados.append('Plástico')
+                        self.comando_SQL = "insert into %s (Material) values ('Plástico')"
+                        self.cursor.execute(self.comando_SQL,self.usu)
+                        self.banco.commit()
+                    '''
+
+
+                        
+
+
+                    # criar o banco de dados do usuário aqui e inserir as informações na tabela.
                     Principal.inicio(self)
 
                 else:
@@ -170,6 +224,9 @@ class Cadastro (BoxLayout): # Classe responsável pela criação da interface gr
     
     def voltar(self): # Ao ser chamada, essa função chama a função início da classe principal (Principal()). 
         Principal.inicio(self)
+'''
+class ConsultaBD (BoxLayout):
+'''
 
 class Principal(BoxLayout): # Classe que gerencia as mudanças de interface gráfica do aplicativo.
     def __init__(self,*args,**kwargs):
@@ -187,7 +244,13 @@ class Principal(BoxLayout): # Classe que gerencia as mudanças de interface grá
     def inicio (self): # Ao ser chamada, essa função limpa a tela atual e abre a tela de acesso do usuário.
         self.clear_widgets()
         self.tela=Inicio() # Define a classe Inicio() como um widget
-        self.add_widget(self.tela) # Insere a tela Inicio() como página inicial do app   
+        self.add_widget(self.tela) # Insere a tela Inicio() como página inicial do app 
+'''
+    def consulta (self):
+        self.clear_widgets()
+        self.tela=ConsultaBD() # Define a classe Inicio() como um widget
+        self.add_widget(self.tela) # Insere a tela Inicio() como página inicial do app 
+'''
 
 class Janela(App): # classe que cria o núcleo do aplicativo e que chama a classe Principal() que gerenciará a troca de interfaces gráficas no aplicativo.
     def build(self):
