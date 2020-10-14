@@ -9,7 +9,7 @@ from kivy.properties import StringProperty, OptionProperty, NumericProperty, Boo
 import mysql.connector
 from kivy.uix.checkbox import CheckBox
 ''' A lista acima carrega todas as bibliotecas usadas nesse programa'''
-
+import Cadastro
 class Botao(Button): # Classe para customizar um tipo de botão com alguns parâmetros pré definidos. Não precisa de construtor. Estamos usando o pacote kivy.properties pra usar a classe dessa maneira.
     size_hint=ListProperty([1, .3])#[1,.4]
     background_color=ListProperty([0, .5,1,1])
@@ -86,6 +86,10 @@ class Inicio(BoxLayout): # Classe responsável pela criação da interface gráf
             if self.Isenha.text == self.valores[0][1]:
                 self.Vusuario.text = ''
                 self.Vsenha.text = 'Ok'
+                self.clear_widgets()
+                self.tela=ConsultaBD(self.Iusuario.text) # O nome da tabela do usuário entra na classe ConsultaBD por aqui.  
+                self.add_widget(self.tela) # Insere a tela Inicio() como página inicial do app 
+
             else:
                 self.Vusuario.text = ''
                 self.Vsenha.text = 'Incorreta'
@@ -93,23 +97,103 @@ class Inicio(BoxLayout): # Classe responsável pela criação da interface gráf
             self.Vusuario.text = 'Inexistente'
 
     def novo (self): # Ao ser chamada, essa função chama a função novo da classe principal (Principal()). 
-        Principal.novo(self)
+        self.clear_widgets()
+        self.tela=Cadastro() # Define a classe Inicio() como um widget
+        self.add_widget(self.tela) # Insere a tela Inicio() como página inicial do app  
+
+
+class ConsultaBD (BoxLayout):
+    def __init__(self,usu,*args,**kwargs):
+        super(ConsultaBD, self).__init__(**kwargs)
+        #BoxLayout.__init__(self,*args,**kwargs)    
+        
+        self.nomeBD=usu
+        
+        
+        self.orientation='vertical'
+        
+        self.Rteste=Rotulo(text='Consulta'); self.add_widget(self.Rteste)
+        
+        self.caixaA1=GridLayout(cols=5, spacing=10, size_hint=(1,.30))
+
+        self.material=Rotulo(text='Material'); self.caixaA1.add_widget(self.material)
+        self.preco=Rotulo(text='Preço (R$/kg)'); self.caixaA1.add_widget(self.preco)
+        self.quantidade=Rotulo(text='Quantidade (kg)'); self.caixaA1.add_widget(self.quantidade)
+        self.valor=Rotulo(text='Valor (R$)'); self.caixaA1.add_widget(self.valor)
+        self.preco2=Rotulo(text='Preço (R$/kg)'); self.caixaA1.add_widget(self.preco2)
+
+        self.banco = mysql.connector.connect(host='localhost',user='root', password='', database='coop') # Conexão do Python com o banco de dados presente nas nuvens.
+        self.cursor = self.banco.cursor()
+        self.comando_SQL ="SELECT Material,Preço,Quantidade,(Preço*Quantidade) FROM "+self.nomeBD
+        self.cursor.execute(self.comando_SQL)
+        self.valores=self.cursor.fetchall()
+
+        self.n=len(self.valores)
+        
+        self.matriz=[5*[0]]*self.n
+
+        self.teste=[]
+        self.teste2=[]
+
+        for i in range(self.n):
+            #print(i)
+            for j in range(4):
+                self.matriz[i][j]=Rotulo(text=str(self.valores[i][j])); self.caixaA1.add_widget(self.matriz[i][j])
+                self.teste.append(self.matriz[i][j])
+            self.matriz[i][j+1]=TextInput(text='0.00'); self.caixaA1.add_widget(self.matriz[i][j+1])
+            self.teste.append(self.matriz[i][j+1])
+            self.teste2.append(self.teste)
+            self.teste=[]
+        
+        for i in range(self.n):
+            for j in range(5):
+                print(self.teste2[i][j])
+       
+
+        
+        self.vazio=Rotulo(text=''); self.caixaA1.add_widget(self.vazio)
+        self.total=Rotulo(text='Total:'); self.caixaA1.add_widget(self.total)
+
+        self.comando_SQL ="SELECT SUM(Quantidade) FROM "+self.nomeBD
+        self.cursor.execute(self.comando_SQL)
+        self.valores=self.cursor.fetchall()
+        self.Qtotal=Rotulo(text=str(self.valores[0][0])); self.caixaA1.add_widget(self.Qtotal)
+        self.comando_SQL ="SELECT SUM(Preço*Quantidade) FROM "+self.nomeBD
+        self.cursor.execute(self.comando_SQL)
+        self.valores=self.cursor.fetchall()
+        self.Vtotal=Rotulo(text=str(self.valores[0][0])); self.caixaA1.add_widget(self.Vtotal)
+        self.alterar=Botao(text="Alterar"); self.caixaA1.add_widget(self.alterar)
+        self.alterar.on_press=self.calcular 
+        
+        
+        
+        self.add_widget(self.caixaA1)
+        
+    def calcular(self):
+        for i in range(self.n):
+            self.teste2[i][1].text=str(self.teste2[i][4].text)
+            # self.comando_SQL ="UPDATE "+self.nomeBD+" SET Preço="+self.teste2[i][1].text+"WHERE Material="+self.teste2[i][0].text  #fazer teste
+            #self.comando_SQL ="UPDATE '"+self.nomeBD+"' SET Preço="+self.teste2[i][1].text+"WHERE Material='"+self.teste2[i][0].text+"'"  #fazer teste
+            #print(self.comando_SQL)
+            # jeito q funcionou no terminal:    update oi set Preço='3' where Material='Plástico'
+            # Arrumar primeiro o banco de dados. Excluir todas as tabelas e criar um novo cadastro
+
 
 class Cadastro (BoxLayout): # Classe responsável pela criação da interface gráfica de cadastro do usuário. 
     def __init__(self,*args,**kwargs):
         BoxLayout.__init__(self,*args,**kwargs)
         self.orientation='vertical'
-        self.a=(.35,.1)
-        self.b=(.5, .1)
-        self.c=(.15,.1)
+        self.a=(.35,.05)
+        self.b=(.5, .05)
+        self.c=(.15,.05)
 
-        self.caixaA1=BoxLayout(orientation='vertical',size_hint=(1,.20)) 
-        self.titulo=Rotulo(text='Cadastro', font_size=30, size_hint=(1,.15),color=(1,1,1,.5));self.caixaA1.add_widget(self.titulo)     
+        self.caixaA1=BoxLayout(orientation='vertical',size_hint=(1,.1)) 
+        self.titulo=Rotulo(text='Cadastro', font_size=30, size_hint=(1,.05),color=(1,1,1,.5));self.caixaA1.add_widget(self.titulo)     
         self.add_widget(self.caixaA1)
 
         # Widgets inseridos na caixaA2 (caixaA2>>caixa):
 
-        self.caixaA2=GridLayout(cols=3, spacing=10, size_hint=(1,.30))
+        self.caixaA2=GridLayout(cols=3, spacing=10, size_hint=(1,.9))
 
         self.Lempresa=Rotulo(text='Empresa:', size_hint=self.a); self.caixaA2.add_widget(self.Lempresa)
         self.Iempresa=TextInput(text='',multiline=False, font_size=20,size_hint=self.b, scroll_y=60);self.caixaA2.add_widget(self.Iempresa)
@@ -141,10 +225,29 @@ class Cadastro (BoxLayout): # Classe responsável pela criação da interface gr
         self.Vpapelao=Rotulo(text='',size_hint=self.c);self.caixaA2.add_widget(self.Vpapelao)
         #self.Cpapelao.on_press=self.papelao
 
-        self.Lplastico=Rotulo(text='Papelão:',size_hint=self.a);self.caixaA2.add_widget(self.Lplastico)
+        self.Lplastico=Rotulo(text='Plástico:',size_hint=self.a);self.caixaA2.add_widget(self.Lplastico)
         self.Cplastico=CheckBox(size_hint=self.b);self.caixaA2.add_widget(self.Cplastico)
         self.Vplastico=Rotulo(text='',size_hint=self.c);self.caixaA2.add_widget(self.Vplastico)
 
+        self.Lpapel=Rotulo(text='Papel:',size_hint=self.a);self.caixaA2.add_widget(self.Lpapel)
+        self.Cpapel=CheckBox(size_hint=self.b);self.caixaA2.add_widget(self.Cpapel)
+        self.Vpapel=Rotulo(text='',size_hint=self.c);self.caixaA2.add_widget(self.Vpapel)
+
+        self.Lvidro=Rotulo(text='Vidro:',size_hint=self.a);self.caixaA2.add_widget(self.Lvidro)
+        self.Cvidro=CheckBox(size_hint=self.b);self.caixaA2.add_widget(self.Cvidro)
+        self.Vvidro=Rotulo(text='',size_hint=self.c);self.caixaA2.add_widget(self.Vvidro)
+
+        self.Leletronicos=Rotulo(text='Eletrônicos:',size_hint=self.a);self.caixaA2.add_widget(self.Leletronicos)
+        self.Celetronicos=CheckBox(size_hint=self.b);self.caixaA2.add_widget(self.Celetronicos)
+        self.Veletronicos=Rotulo(text='',size_hint=self.c);self.caixaA2.add_widget(self.Veletronicos)
+
+        self.Laluminio=Rotulo(text='Alumínio:',size_hint=self.a);self.caixaA2.add_widget(self.Laluminio)
+        self.Caluminio=CheckBox(size_hint=self.b);self.caixaA2.add_widget(self.Caluminio)
+        self.Valuminio=Rotulo(text='',size_hint=self.c);self.caixaA2.add_widget(self.Valuminio)
+
+        self.Lborracha=Rotulo(text='Borracha:',size_hint=self.a);self.caixaA2.add_widget(self.Lborracha)
+        self.Cborracha=CheckBox(size_hint=self.b);self.caixaA2.add_widget(self.Cborracha)
+        self.Vborracha=Rotulo(text='',size_hint=self.c);self.caixaA2.add_widget(self.Vborracha)
 
         self.Vsalvar1=Rotulo(text='', size_hint=self.a); self.caixaA2.add_widget(self.Vsalvar1)
         self.Vsalvar2=Rotulo(text='', size_hint=self.b); self.caixaA2.add_widget(self.Vsalvar2) 
@@ -159,16 +262,11 @@ class Cadastro (BoxLayout): # Classe responsável pela criação da interface gr
         self.add_widget(self.caixaA2)
         self.Vazio=Rotulo(text='', size_hint=(1,.2)); self.add_widget(self.Vazio) 
 
-    #def papelao(self):
-    #    print(self.Cpapelao.active)
-
     def salvar(self): # Salva o cadastro do usuário, caso o preenchimento dos dados tenha sido realizado adequadamente.
         self.banco = mysql.connector.connect(host='localhost',user='root', password='', database='coop') # Conexão do Python com o banco de dados presente nas nuvens.
         self.cursor = self.banco.cursor()
         self.usu=self.Iusuario.text,
         self.usu2=self.Iusuario.text
-        print(self.usu2)
-        print(type(self.usu2))
         self.comando_SQL ="SELECT * FROM cadastros where login = %s"
         self.cursor.execute(self.comando_SQL, self.usu)
         self.valores=self.cursor.fetchall() 
@@ -185,35 +283,46 @@ class Cadastro (BoxLayout): # Classe responsável pela criação da interface gr
                     self.dados = (self.Iusuario.text,self.Isenha.text,self.Iempresa.text,self.Iendereco.text)
                     self.cursor.execute(self.comando_SQL,self.dados)
                     self.banco.commit()
-                    ''' trabalhando nas linhas abaixo
-                    self.comando_SQL = "CREATE TABLE "+self.Iusuario.text+"(Material VARCHAR(30) not null, Quantidade VARCHAR(30), ValorTotal VARCHAR(30))"
+                    # O comando a seguir cria a tabela de estoque da cooperativa
+                    self.comando_SQL = "CREATE TABLE "+self.Iusuario.text+"(Material VARCHAR(30) not null, Preço DECIMAL(5,2), Quantidade DECIMAL(6,3))"
                     self.cursor.execute(self.comando_SQL)
                     self.banco.commit()
                 
-                    #self.dados=[]
-                    count=0
+                    # Os comandos abaixo alimentam o banco de dados do cliente com os materiais que são tratados na cooperativa
+                    
+                    self.comando_SQL = "INSERT INTO "+self.Iusuario.text+ "(Material, Preço, Quantidade) VALUES (%s,0,0)"
                     if self.Cpapelao.active:
-                        count+=1
-                        print(count)
-                        #self.dados.append('Papelão')
-                        self.comando_SQL = "insert into %s (Material) values ('Papelão')"
-                        self.cursor.execute(self.comando_SQL,self.usu)
-                        self.banco.commit()
+                        self.cursor.execute(self.comando_SQL,("Papelão",))
                     if self.Cplastico.active:
-                        count+=1
-                        print(count)
-                        #self.dados.append('Plástico')
-                        self.comando_SQL = "insert into %s (Material) values ('Plástico')"
-                        self.cursor.execute(self.comando_SQL,self.usu)
-                        self.banco.commit()
-                    '''
+                        self.cursor.execute(self.comando_SQL,("Plástico",))
+                    if self.Cpapel.active:
+                        self.cursor.execute(self.comando_SQL,("Papel",))
+                    if self.Cvidro.active:
+                        self.cursor.execute(self.comando_SQL,("Vidro",))
+                    if self.Celetronicos.active:
+                        self.cursor.execute(self.comando_SQL,("Eletrônicos",))
+                    if self.Caluminio.active:
+                        self.cursor.execute(self.comando_SQL,("Alumínio",))
+                    if self.Cborracha.active:
+                        self.cursor.execute(self.comando_SQL,("Borracha",))
+                    self.banco.commit()
+                    # Criar os widgets checkbox referente aos materiais acima.
 
-
-                        
+                    ''' Testes para manipular o banco de dados de estoque: 
+                    self.comando_SQL ="SELECT * FROM "+self.Iusuario.text+""
+                    self.cursor.execute(self.comando_SQL)
+                    self.teste03=self.cursor.fetchall()
+                    print(self.teste03) 
+                    print(self.teste03[1][1])  
+                    print(self.teste03[2][0])  
+                    print(len(self.teste03[:][0]))
+                    ''' 
 
 
                     # criar o banco de dados do usuário aqui e inserir as informações na tabela.
-                    Principal.inicio(self)
+                    self.clear_widgets()
+                    self.tela=Inicio() # Define a classe Inicio() como um widget
+                    self.add_widget(self.tela) # Insere a tela Inicio() como página inicial do app
 
                 else:
                     self.Vsalvar2.text='Senhas não conferem'
@@ -223,38 +332,14 @@ class Cadastro (BoxLayout): # Classe responsável pela criação da interface gr
             self.Vsalvar2.text='Usuário já existe'
     
     def voltar(self): # Ao ser chamada, essa função chama a função início da classe principal (Principal()). 
-        Principal.inicio(self)
-'''
-class ConsultaBD (BoxLayout):
-'''
-
-class Principal(BoxLayout): # Classe que gerencia as mudanças de interface gráfica do aplicativo.
-    def __init__(self,*args,**kwargs):
-        BoxLayout.__init__(self,*args,**kwargs)
-        self.orientation='vertical'
-        
-        self.tela=Inicio() # Define a classe Inicio() como um widget.
-        self.add_widget(self.tela) # Insere a tela Inicio() como página inicial do app.
-             
-    def novo (self): # Ao ser chamada, essa função limpa a tela atual e abre a tela de cadastro de novo usuário.
-        self.clear_widgets()
-        self.tela=Cadastro() # Define a classe Inicio() como um widget
-        self.add_widget(self.tela) # Insere a tela Inicio() como página inicial do app   
-    
-    def inicio (self): # Ao ser chamada, essa função limpa a tela atual e abre a tela de acesso do usuário.
         self.clear_widgets()
         self.tela=Inicio() # Define a classe Inicio() como um widget
         self.add_widget(self.tela) # Insere a tela Inicio() como página inicial do app 
-'''
-    def consulta (self):
-        self.clear_widgets()
-        self.tela=ConsultaBD() # Define a classe Inicio() como um widget
-        self.add_widget(self.tela) # Insere a tela Inicio() como página inicial do app 
-'''
+
 
 class Janela(App): # classe que cria o núcleo do aplicativo e que chama a classe Principal() que gerenciará a troca de interfaces gráficas no aplicativo.
     def build(self):
-        self.root=root=Principal()
+        self.root=root=Inicio()
         root.bind(size=self._update_rect, pos=self._update_rect) # Dessa linha pra baixo (ateh self.rect.size=instance.size), o procedimento eh para criar um fundo colorido
         with root.canvas.before:
             Color(0,0,0,1)
