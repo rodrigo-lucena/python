@@ -105,22 +105,27 @@ class Inicio(BoxLayout): # Classe responsável pela criação da interface gráf
 class ConsultaBD (BoxLayout):
     def __init__(self,usu,*args,**kwargs):
         super(ConsultaBD, self).__init__(**kwargs)
-        #BoxLayout.__init__(self,*args,**kwargs)    
+        #self.a=(.35,.05)
+        #self.b=(.5, .05)
+        #self.c=(.15,.05)
+        self.f = 15
+        self.f2 = 17   
         
+
         self.nomeBD=usu
         
         
         self.orientation='vertical'
         
-        self.Rteste=Rotulo(text='Consulta'); self.add_widget(self.Rteste)
+        self.Rteste=Rotulo(text='Consulta', size_hint=(1,.1)); self.add_widget(self.Rteste)
         
-        self.caixaA1=GridLayout(cols=5, spacing=10, size_hint=(1,.30))
+        self.caixaA1=GridLayout(cols=5, spacing=5, size_hint=(1,.3))
 
-        self.material=Rotulo(text='Material'); self.caixaA1.add_widget(self.material)
-        self.preco=Rotulo(text='Preço (R$/kg)'); self.caixaA1.add_widget(self.preco)
-        self.quantidade=Rotulo(text='Quantidade (kg)'); self.caixaA1.add_widget(self.quantidade)
-        self.valor=Rotulo(text='Valor (R$)'); self.caixaA1.add_widget(self.valor)
-        self.preco2=Rotulo(text='Preço (R$/kg)'); self.caixaA1.add_widget(self.preco2)
+        self.material=Rotulo(text='Material',font_size=self.f); self.caixaA1.add_widget(self.material)
+        self.preco=Rotulo(text='Preço (R$/kg)',font_size=self.f); self.caixaA1.add_widget(self.preco)
+        self.quantidade=Rotulo(text='Quantidade (kg)',font_size=self.f); self.caixaA1.add_widget(self.quantidade)
+        self.valor=Rotulo(text='Valor (R$)',font_size=self.f); self.caixaA1.add_widget(self.valor)
+        self.preco2=Rotulo(text='Preço (R$/kg)',font_size=self.f); self.caixaA1.add_widget(self.preco2)
 
         self.banco = mysql.connector.connect(host='localhost',user='root', password='', database='coop') # Conexão do Python com o banco de dados presente nas nuvens.
         self.cursor = self.banco.cursor()
@@ -130,53 +135,94 @@ class ConsultaBD (BoxLayout):
 
         self.n=len(self.valores)
         
-        self.matriz=[5*[0]]*self.n
-
-        self.teste=[]
-        self.teste2=[]
-
-        for i in range(self.n):
-            #print(i)
-            for j in range(4):
-                self.matriz[i][j]=Rotulo(text=str(self.valores[i][j])); self.caixaA1.add_widget(self.matriz[i][j])
-                self.teste.append(self.matriz[i][j])
-            self.matriz[i][j+1]=TextInput(text='0.00'); self.caixaA1.add_widget(self.matriz[i][j+1])
-            self.teste.append(self.matriz[i][j+1])
-            self.teste2.append(self.teste)
-            self.teste=[]
-        
-        for i in range(self.n):
+        self.coluna=[]
+        self.matr=[]
+        for i in range(self.n): # criação de matriz de zeros
             for j in range(5):
-                print(self.teste2[i][j])
-       
-
+                self.coluna.append(0)
+            self.matr.append(self.coluna)
+            self.coluna=[]
+        
+        for i in range(self.n): # criação de matriz com todos os elementos widgets da tabela de consulta
+            for j in range(4):
+                self.matr[i][j]=Rotulo(text=str(self.valores[i][j]),font_size=self.f2); self.caixaA1.add_widget(self.matr[i][j])
+            self.matr[i][j+1]=TextInput(text=str(self.valores[i][j-2]),font_size=self.f2); self.caixaA1.add_widget(self.matr[i][j+1])
         
         self.vazio=Rotulo(text=''); self.caixaA1.add_widget(self.vazio)
-        self.total=Rotulo(text='Total:'); self.caixaA1.add_widget(self.total)
+        self.total=Rotulo(text='Total:',font_size=self.f2); self.caixaA1.add_widget(self.total)
 
         self.comando_SQL ="SELECT SUM(Quantidade) FROM "+self.nomeBD
         self.cursor.execute(self.comando_SQL)
-        self.valores=self.cursor.fetchall()
-        self.Qtotal=Rotulo(text=str(self.valores[0][0])); self.caixaA1.add_widget(self.Qtotal)
+        self.valores2=self.cursor.fetchall()
+        self.Qtotal=Rotulo(text=str(self.valores2[0][0]),font_size=self.f2); self.caixaA1.add_widget(self.Qtotal)
         self.comando_SQL ="SELECT SUM(Preço*Quantidade) FROM "+self.nomeBD
         self.cursor.execute(self.comando_SQL)
-        self.valores=self.cursor.fetchall()
-        self.Vtotal=Rotulo(text=str(self.valores[0][0])); self.caixaA1.add_widget(self.Vtotal)
-        self.alterar=Botao(text="Alterar"); self.caixaA1.add_widget(self.alterar)
+        self.valores3=self.cursor.fetchall()
+        self.Vtotal=Rotulo(text=str(self.valores3[0][0]),font_size=self.f2); self.caixaA1.add_widget(self.Vtotal)
+        self.alterar=Botao(text="Alterar",font_size=self.f2); self.caixaA1.add_widget(self.alterar)
         self.alterar.on_press=self.calcular 
+        
         
         
         
         self.add_widget(self.caixaA1)
         
+        
+        # A partir daqui o código é para a parte de entrada e saída de itens no estoque
+
+        self.Rteste=Rotulo(text='Entrada/Saída', size_hint=(1,.1)); self.add_widget(self.Rteste)
+        self.caixaA2=GridLayout(cols=5, spacing=10, size_hint=(1,.25))
+        
+        
+        self.legenda=['','Material','Entrada','Saída','']
+        for i in range(5):
+            self.legenda[i]=Rotulo(text=self.legenda[i],font_size=self.f); self.caixaA2.add_widget(self.legenda[i])     
+        
+        self.matr2=[]
+        for i in range(self.n): # criação de matriz de zeros
+            for j in range(5):
+                self.coluna.append(0)
+            self.matr2.append(self.coluna)
+            self.coluna=[]
+        
+        for i in range(self.n): # criação de matriz com todos os elementos widgets da tabela de entrada/saída
+            self.matr2[i][0]=Rotulo(text='',font_size=self.f2); self.caixaA2.add_widget(self.matr2[i][0])
+            self.matr2[i][1]=Rotulo(text=str(self.valores[i][0]),font_size=self.f2); self.caixaA2.add_widget(self.matr2[i][1])
+            self.matr2[i][2]=TextInput(text='0.00',font_size=self.f2); self.caixaA2.add_widget(self.matr2[i][2])
+            self.matr2[i][3]=TextInput(text='0.00',font_size=self.f2); self.caixaA2.add_widget(self.matr2[i][3])
+            self.matr2[i][4]=Rotulo(text='',font_size=self.f2); self.caixaA2.add_widget(self.matr2[i][4])   
+        
+         
+        
+        
+        self.add_widget(self.caixaA2)
+
+        self.caixaA3=GridLayout(cols=3, padding=(30,5), size_hint=(1,.05))
+
+        self.intera=['','Inserir','']
+        self.intera[0]=Rotulo(text='');self.caixaA3.add_widget(self.intera[0])
+        self.intera[1]=Botao(text='Inserir',font_size=self.f2);self.caixaA3.add_widget(self.intera[1])
+        self.intera[2]=Rotulo(text='');self.caixaA3.add_widget(self.intera[2])
+        self.add_widget(self.caixaA3)
+        self.intera[1].on_press=self.calcular2 
+
+        self.temporario=Rotulo(text='temporário',size_hint=(1,.2)); self.add_widget(self.temporario)
+        
     def calcular(self):
         for i in range(self.n):
-            self.teste2[i][1].text=str(self.teste2[i][4].text)
-            # self.comando_SQL ="UPDATE "+self.nomeBD+" SET Preço="+self.teste2[i][1].text+"WHERE Material="+self.teste2[i][0].text  #fazer teste
-            #self.comando_SQL ="UPDATE '"+self.nomeBD+"' SET Preço="+self.teste2[i][1].text+"WHERE Material='"+self.teste2[i][0].text+"'"  #fazer teste
-            #print(self.comando_SQL)
-            # jeito q funcionou no terminal:    update oi set Preço='3' where Material='Plástico'
-            # Arrumar primeiro o banco de dados. Excluir todas as tabelas e criar um novo cadastro
+            self.matr[i][1].text=str(self.matr[i][4].text)
+            self.comando_SQL ="UPDATE "+self.nomeBD+" SET Preço='"+self.matr[i][1].text+"' WHERE Material='"+self.matr[i][0].text+"'"  #fazer teste
+            self.cursor.execute(self.comando_SQL)
+        self.banco.commit()
+        #TEM QUE ATUALIZAR TAMBÉM A COLUNA QUANTIDADE*PREÇO E AS SOMAS AO FINAL
+    
+    def calcular2(self):
+        # ASSOCIAR A TABELA DE ENTRADA/SAÍDA COM A DE CONSULTA
+        for i in range(self.n):
+            self.teste=float(self.valores[i][3])+float(self.matr2[i][2].text)-float(self.matr2[i][3].text)
+            print(self.teste)
+            self.matr2[i][2].text='0.00'
+            self.matr2[i][3].text='0.00'
 
 
 class Cadastro (BoxLayout): # Classe responsável pela criação da interface gráfica de cadastro do usuário. 
@@ -306,20 +352,6 @@ class Cadastro (BoxLayout): # Classe responsável pela criação da interface gr
                     if self.Cborracha.active:
                         self.cursor.execute(self.comando_SQL,("Borracha",))
                     self.banco.commit()
-                    # Criar os widgets checkbox referente aos materiais acima.
-
-                    ''' Testes para manipular o banco de dados de estoque: 
-                    self.comando_SQL ="SELECT * FROM "+self.Iusuario.text+""
-                    self.cursor.execute(self.comando_SQL)
-                    self.teste03=self.cursor.fetchall()
-                    print(self.teste03) 
-                    print(self.teste03[1][1])  
-                    print(self.teste03[2][0])  
-                    print(len(self.teste03[:][0]))
-                    ''' 
-
-
-                    # criar o banco de dados do usuário aqui e inserir as informações na tabela.
                     self.clear_widgets()
                     self.tela=Inicio() # Define a classe Inicio() como um widget
                     self.add_widget(self.tela) # Insere a tela Inicio() como página inicial do app

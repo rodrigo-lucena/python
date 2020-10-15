@@ -9,3 +9,26 @@ from kivy.properties import StringProperty, OptionProperty, NumericProperty, Boo
 import mysql.connector
 from kivy.uix.checkbox import CheckBox
 
+coluna = []
+matriz = []
+
+for i in range(3):
+    for j in range(5):
+        coluna.append(0)
+    matriz.append(coluna)
+    coluna=[]
+#print(matriz)
+#matriz[0][1]=3
+#print(matriz)
+
+x=matriz
+
+x[0][0]=4
+
+#print(x)
+#print(matriz)
+
+matriz[0][1]=8
+
+#print(x)
+#print(matriz)
