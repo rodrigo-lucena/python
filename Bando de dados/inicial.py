@@ -8,7 +8,7 @@ from kivy.graphics import Color, Rectangle
 from kivy.properties import StringProperty, OptionProperty, NumericProperty, BooleanProperty, ReferenceListProperty, ListProperty, ObjectProperty, DictProperty # Usado para alterar o default de diversas propriedades
 import mysql.connector
 from kivy.uix.checkbox import CheckBox
-''' A lista acima carrega todas as bibliotecas usadas nesse programa.'''
+''' A lista acima carrega todas as bibliotecas usadas nesse programa..'''
 
 class Botao(Button): # Classe para customizar um tipo de botão com alguns parâmetros pré definidos. Não precisa de construtor. Estamos usando o pacote kivy.properties pra usar a classe dessa maneira.
     size_hint=ListProperty([1, .3])
